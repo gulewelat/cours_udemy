@@ -3,7 +3,7 @@
 // 6.2 Apprendre les bases de la programmation des RDDs
 // 6.3 map, flatMap, filter, distinct, groupBy et sample
 // 6.4 Union, intersection, substract, cartesian, reduce et fold
-
+// 6.5 Pierreir rdd: groupByKey, reduceByKey, mapValues, keys, values et sortByKey
 
 
 // 6.2 Apprendre les bases de la programmation des RDDs
@@ -94,8 +94,66 @@ rdd.count
 val sampledData = rdd.sample(false, 0.5) // false = que des valeurs uniques, pas de doublons
 // 0,5: je dois récupérer 50% + ou - de mon échantillon
 sampledData.count
+sampledData.take(30) // on regarde les 30 premiers éléments 
 
 // 6.4 Union, intersection, substract, cartesian, reduce et fold
+
+val rdd1 = sc.parallelize(List(1,2,3,4))
+val rdd2 = sc.parallelize(List(3,4,5,6))
+rdd1.union(rdd2).collect
+rdd1.intersection(rdd2).collect
+rdd1.subtract(rdd2).collect
+rdd1.cartesian(rdd2).collect
+
+val rdd = sc.parallelize(1 to 5)
+rdd.collect
+rdd.reduce((x,y) => x+y) // donne 15 
+
+val rdd = sc.parallelize(1 to 5, 2) // partitions
+rdd.glom().collect // un tableau de deux tableaux
+rdd.reduce((x,y) => x+y) // impossible car va faire (1-2) - (3-4-5)
+rdd.fold(9)((x,y) => x+y) // il va sommer les partitions, et va ajouter 9 à chaque partition
+// (9+ (9+ (1+2)) +(9+ (3+4+5)))
+// (9+ (0+ (3)) + (9+ (12)))
+// (9+ (12) + (21))
+// (9 + 33)
+// 42
+
+// 6.5 Pair Rdd: groupByKey, reduceByKey, mapValues, keys, values et sortByKey
+
+val rdd = sc.parallelize(List("cle1 valeur1", "cle2 valeur2", "cle3 valeur3"))
+
+// quelle valeur associer à la clé?
+// quel valeur associer à la clé?
+// solution 1
+val rddPair1 = rdd.map(x => (x.split(" ")(0), x.split(" ")(1)))
+
+val rddCV = sc.parallelize(List("c1 v1", "c2 v2", "c3 v3"))
+val rddP = rddCV.map(x => x.split(" ")) // tableau de tableaux avec les éléments par 2
+val rddP2 = rddP.map(x => (x(0),x(1)))
+rddpP2.collect // un tableau de tupes clé valeur
+
+val rddP3 = rddCV.map(x => (x.split(" ")(0), x.split(" ")(1)))
+
+// solution 2
+val rddpair2 = rdd.keyBy(x => x.split(" ")(0))
+rddPair2.collect
+
+val rdd  sc.parallelize(List("0,11", "1,11", "0,4", "2,8", "1,1", "9,8"))
+val rddPair = rdd.map( x=> (x.split(",")(0), x.split(",")(1).toInt))
+rddPair.collect // les clefs en string et la valeur en integer
+
+val rddgbk = rddPair.groupByKey()
+rddbgk.collect
+
+val rdd = sc.parallelize(List("0,12", "1,12", "0,4", "2,11", "1,1", "5,4"))
+val rddPair = rdd.map(x => (x.split(",")(0), x.split(",")(1).toInt))
+val rbkRDD = rddPair.reduceByKey((x,y) => x+y) // additionne les valeurs par clef
+
+
+
+
+
 
 
 
