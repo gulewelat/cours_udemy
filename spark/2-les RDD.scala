@@ -3,8 +3,9 @@
 // 6.2 Apprendre les bases de la programmation des RDDs
 // 6.3 map, flatMap, filter, distinct, groupBy et sample
 // 6.4 Union, intersection, substract, cartesian, reduce et fold
-// 6.5 Pierreir rdd: groupByKey, reduceByKey, mapValues, keys, values et sortByKey
-
+// 6.5 Pair Rdd: groupByKey, reduceByKey, mapValues, keys, values et sortByKey
+// 6.6 Join, rightOuterJoin, leftOuterJoin et cogroup
+// 6.7 Exercice
 
 // 6.2 Apprendre les bases de la programmation des RDDs
 
@@ -149,6 +150,42 @@ rddbgk.collect
 val rdd = sc.parallelize(List("0,12", "1,12", "0,4", "2,11", "1,1", "5,4"))
 val rddPair = rdd.map(x => (x.split(",")(0), x.split(",")(1).toInt))
 val rbkRDD = rddPair.reduceByKey((x,y) => x+y) // additionne les valeurs par clef
+
+val squareValueRDD = rddPair.mapValues(x => x*x)// s'effectue que sur les valeurs, chaque clef étant traitée de façon unique
+
+rddPair.keys.collect
+rddPair.values.collect
+
+val sortByKeyRDD = rddPair.sortByKey() // Pour un descending order: sortByKey(false)
+
+
+// 6.6 Join, rightOuterJoin, leftOuterJoin et cogroup
+
+val rdd1 = sc.parallelize(List("a,1", "b,0", "c,7").map(x => (x.split(",")(0), (x.split(",")(1).toInt))))
+val rdd2 = sc.parallelize(List("d,6", "e,1", "a,8").map(x => (x.split(",")(0), (x.split(",")(1).toInt))))
+
+val joinRDD = rdd1.join(rdd2)
+joinRDD.collect // inner join avec (a, (1,8))
+
+val rojRDD = rdd1.rightOuterJoin(rdd2)
+
+val cgRDD = rdd1.cogroup(rdd2) // full outer join
+
+// 6.7 Exercice
+
+val rdd = sc.textFile("/Users/julide/Desktop/projets python/spark/ressources/Temperature_1950.txt")
+
+val rdd1 = rdd.filter(x => x.contains("MAX"))
+
+val rddtuple = rdd1.map(x => (x.split(",")(0), x.split(",")(3).toInt))
+
+val solutionMax = rddtuple.reduceByKey((x,y) => if (x > y) x else y)
+// ou
+val solutionMax = rddTuple.reduceByKey((x,y) => math.max(x,y))
+
+
+
+
 
 
 
