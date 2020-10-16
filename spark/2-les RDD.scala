@@ -183,7 +183,7 @@ val solutionMax = rddtuple.reduceByKey((x,y) => if (x > y) x else y)
 // ou
 val solutionMax = rddTuple.reduceByKey((x,y) => math.max(x,y))
 
-
+solutionMax.collect
 
 
 
